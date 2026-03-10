@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────
+#  Medical Report Simplification  —  Config
+# ─────────────────────────────────────────────────────
+
+project_name: medical-report-simplification
+
+model:
+  # BART-base: strong seq2seq model, excellent for summarization/simplification
+  # Pre-trained on 160GB of English text with a denoising objective
+  base_model: facebook/bart-base
+
+lora:
+  enabled: true
+  r: 8
+  lora_alpha: 16
+  lora_dropout: 0.1
+  # BART encoder+decoder attention projections
+  target_modules: ["q_proj", "v_proj"]
+  bias: none
+  task_type: SEQ_2_SEQ_LM
+
+training:
+  output_dir: ./outputs/checkpoints
+  num_epochs: 5
+  batch_size: 8
+  eval_batch_size: 16
+  learning_rate: 2e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.06
+  max_input_length: 512    # doctor note length
+  max_target_length: 128   # simplified explanation length
+  fp16: false
+  seed: 42
+  gradient_accumulation_steps: 4   # effective batch = 8 * 4 = 32
+
+wandb:
+  enabled: true
+  project: med-simplify
+  run_name: bart-lora-v1
+
+evaluation:
+  output_file: ./outputs/eval_results.json
+  # Metrics used — all claimed on resume
+  metrics: [bleu, rouge1, rouge2, rougeL, perplexity]
